@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HDF5 Tile Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.1.0/openseadragon.min.js"></script>
+    <style>
+        #openseadragon-viewer {
+            width: 100%;
+            height: 800px;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="openseadragon-viewer"></div>
+
+    <script>
+        // Fetch metadata from the server
+        fetch('/metadata')
+            .then(response => response.json())
+            .then(data => {
+                const { width, height, tile_size, num_levels } = data;
+
+                // Initialize OpenSeadragon with the fetched metadata
+                OpenSeadragon({
+                    id: "openseadragon-viewer",
+                    prefixUrl: "https://cdnjs.cloudflare.com/ajax/libs/openseadragon/3.1.0/images/",
+                    tileSources: {
+                        height: height,
+                        width: width,
+                        tileSize: tile_size,
+                        minLevel: 0,
+                        maxLevel: num_levels - 1,
+                        getTileUrl: function(level, x, y) {
+                            return `/tile?level=${level}&x=${x}&y=${y}`;
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching metadata:', error);
+            });
+    </script>
+</body>
+</html>
