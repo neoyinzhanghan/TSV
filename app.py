@@ -1,4 +1,4 @@
-from flask import Flask, send_file, jsonify, request
+from flask import Flask, send_file, jsonify, request, render_template
 import io
 import numpy as np
 from PIL import Image
@@ -6,7 +6,6 @@ import h5py
 import base64
 import os
 
-# Existing tile reading code with modifications to integrate with Flask
 class H5TileReader:
     def __init__(self, h5_path: str):
         self.h5_path = h5_path
@@ -27,16 +26,18 @@ class H5TileReader:
                 )
                 raise e
 
-# Create the Flask app
 app = Flask(__name__)
 
-# Create an instance of the H5TileReader
 h5_path = "/dmpisilon_tools/HemeLabel/media/slides/6825083.h5"
 h5_reader = H5TileReader(h5_path)
 
+@app.route('/')
+def index():
+    """Serve the OpenSeadragon viewer."""
+    return send_file('index.html')
+
 @app.route('/tile', methods=['GET'])
 def get_tile():
-    """Serve a tile based on level, row, and col parameters."""
     level = int(request.args.get('level'))
     row = int(request.args.get('x'))
     col = int(request.args.get('y'))
@@ -52,7 +53,6 @@ def get_tile():
 
 @app.route('/metadata', methods=['GET'])
 def get_metadata():
-    """Serve basic metadata needed for OpenSeadragon initialization."""
     width, height = h5_reader.get_slide_dimensions()
     num_levels = h5_reader.get_num_levels()
     tile_size = h5_reader.get_patch_size()
